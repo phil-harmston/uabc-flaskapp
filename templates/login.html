@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+
+
+<link rel="stylesheet" href="/static/style.css" type="text/css" xmlns="http://www.w3.org/1999/html">
+
+
+{% block content %}
+ <div class="col-sm">
+<div class="form-group">
+<div class='container'>
+<div class='login-form'>
+
+<form class="text-center border border-dark p-5" action="/login" method="POST">
+
+
+    {{ form.email.label }}
+    {{ form.email }}
+    {{ form.password.label }}
+    {{ form.password }}
+
+            <input type="submit" value='Login' class="btn btn-primary">
+
+
+
+
+</form>
+    </div>
+    </div>
+    </div>
+
+{% endblock content %}

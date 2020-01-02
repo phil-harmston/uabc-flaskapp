@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h1>Hello {{ session['username'] }}</h1>
+    <p><a href={{ url_for('logout') }}>logout</a></p>
+<div class='login-form'><form class = 'login-form' action="/dashboard" method="POST">
+
+
+            <legend><h1>Search Database</h1></legend>
+
+                <div class = "inputbox">
+               <input type="text" class="login-field" value="" placeholder="CSC_CODE" name="csc_val">
+</div>
+        <input type="submit" value="Search" class="btn btn-primary btn-large btn-block">
+                <br>
+
+
+
+
+</form>
+    </div>
+{% endblock content %}
