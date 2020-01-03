@@ -9,13 +9,17 @@
    <nav class="navbar navbar-inverse">
   <div class="container-fluid">
     <div class="navbar-header">
-      <a class="navbar-brand" href="#">Custom Utah Alcohol preference research database</a>
+        <h4>Custom Utah Alcohol preference research database</h4>
+        {% if session['logged_in'] %}
+        <h5>Hello {{ session['username'] }}</h5>
+        {% endif %}
     </div>
     <ul class="nav navbar-nav navbar-fixed-top">
     </ul>
     <ul class="nav navbar-nav navbar-right">
-      <li><a href = {{ url_for('create') }} <span class="glyphicon glyphicon-log-in">Create Account</a></li>
-      <li><a href = {{ url_for('home') }} <span class= "glyphicon glyphicon-log-in">Login</a></li>
+      {% if session['logged_in'] %}<a href = {{ url_for('logout') }} <span class= "glyphicon glyphicon-log-in">Logout</a>
+        {% else %}<a href = {{ url_for('create') }} <span class="glyphicon glyphicon-log-in">Create Account</a>
+        {% endif %}
     </ul>
   </div>
 </nav>
@@ -25,6 +29,14 @@
     {% block content %}
 
     {% endblock content%}
+
+    {% block search_table %}
+
+    {% endblock search_table %}
+
+    {% block hotlist_table %}
+
+    {% endblock hotlist_table %}
 
       {% block footer %}
           <div id="footer">

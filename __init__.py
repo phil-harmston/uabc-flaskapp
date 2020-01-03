@@ -58,13 +58,15 @@ def connection():
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    if session['logged_in']==False:
+    if not session.get('logged_in'):
         return home()
 
     if request.method == "GET":
         return render_template('dashboard.html')
+        c, con = connection()
+        hotlist_search = "SELECT CS_CODE, CON_SIZE, CASE_PACK, PRODUCT_NAME FROM `uabc`.`HotList` " \
+                              "WHERE CS_CODE = '{username}';".format(username=session['email'])
 
-    print(session['logged_in'])
     if request.method == "POST":
         searchval = request.form['csc_val']
         print(searchval)
@@ -72,22 +74,35 @@ def dashboard():
         inventorysearch = "SELECT CS_CODE, CON_SIZE, CASE_PACK, PRODUCT_NAME FROM `uabc`.`Inventory` " \
                               "WHERE CS_CODE = '{csc_val}';".format(csc_val=searchval)
 
-        #print(inventorysearch)
+
         c, con = connection()
 
         c.execute(inventorysearch)
         columns = c.description
-        #print(columns)
+
         results = [{columns[index][0]:column for index, column in enumerate(value)} for value in c.fetchall()]
         pprint.pprint(results)
-
+        return render_template('dashboard.html', results=results)
 
 
     return render_template('dashboard.html')
 
 
+@app.route('/hotlist', methods=['POST'])
+def hotlist():
+    if request.method == "POST":
+        cs_code = request.form['cs_code']
+        UserEmail = session['email']
 
+        c, con = connection()
 
+        insert = "INSERT INTO uabc.HotList(UserEmail, CS_CODE) "
+
+        c.execute(insert + "VALUES( %s, %s)",
+                  (UserEmail, cs_code))
+        con.commit()
+        con.close()
+        return redirect('/dashboard')
 
 
 
@@ -100,7 +115,7 @@ def home():
 
 @app.route('/logout')
 def logout():
-    session.clear()
+    session['logged_in']=False
     return home()
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -122,6 +137,7 @@ def login():
 
         if len(results) == 1:
             for r in results:
+                thisemail = r[0]
                 thisuser = r[1]
                 stored_pwd = r[2]
 
@@ -132,12 +148,13 @@ def login():
             if validpass:
                 session['logged_in'] = True
                 session['username'] = thisuser
+                session['email'] = thisemail
                 return render_template('dashboard.html')
             else:
-                return render_template('login.html', form=form)
+                error = "invalid username or password"
+                return render_template('login.html', form=form, error=error)
         else:
             return render_template('login.html', form=form)
-
     else:
         return render_template('login.html', form=form)
 

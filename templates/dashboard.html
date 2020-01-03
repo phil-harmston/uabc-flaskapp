@@ -1,22 +1,86 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<h1>Hello {{ session['username'] }}</h1>
-    <p><a href={{ url_for('logout') }}>logout</a></p>
+
 <div class='login-form'><form class = 'login-form' action="/dashboard" method="POST">
 
 
-            <legend><h1>Search Database</h1></legend>
 
-                <div class = "inputbox">
-               <input type="text" class="login-field" value="" placeholder="CSC_CODE" name="csc_val">
-</div>
-        <input type="submit" value="Search" class="btn btn-primary btn-large btn-block">
-                <br>
+
+                <div style = 'padding:20px'><legend><h4>Search Database</h4></legend>
+               <input type="text" class="login-field" value="" placeholder="CS_CODE" name="csc_val">
+
+        <input type="submit" value="Search" class="btn btn-primary">
+                </div>
 
 
 
 
 </form>
     </div>
-{% endblock content %}
+    {% endblock content %}
+
+    {% block search_table %}
+    <table class = 'table table-striped'>
+    <colgroup>
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:20%">
+        <col style="width:30%">
+        <col style="width:20%">
+        <col style="width:5%">
+
+  </colgroup>
+    <tbody>
+    <th>CS Code</th>
+    <th>Case Count</th>
+    <th>Container Count</th>
+    <th>Product Name</th>
+    <th>Price</th>
+    <th>Add</th>
+
+        <tr>{% for result in results %}</tr>
+        <td>{{ result['CS_CODE'] }}</td>
+        <td>{{ result['CASE_PACK'] }}</td>
+        <td>{{ result['CON_SIZE'] }}</td>
+        <td>{{ result['PRODUCT_NAME'] }}</td>
+        <td>{{ result['CASE_PACK'] }}</td>
+            <td><form action="/hotlist" method="POST"><input type="hidden" value="{{ result['CS_CODE'] }}" name="cs_code"><input type="submit" class="btn btn-primary"></form></td>
+    {% endfor %}
+    </tbody>
+    </table>
+    {% endblock search_table %}
+
+
+    {% block hotlist_table %}
+        <h3>Hot List</h3>
+    <table class = 'table table-striped'>
+    <colgroup>
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:20%">
+        <col style="width:30%">
+        <col style="width:20%">
+        <col style="width:5%">
+        <col style="width:5%">
+  </colgroup>
+    <tbody>
+    <th>CS Code</th>
+    <th>Case Count</th>
+    <th>Container Count</th>
+    <th>Product Name</th>
+    <th>Price</th>
+    <th>Add</th>
+    <th>Store</th>
+        <tr>{% for result in results %}</tr>
+        <td>{{ result['CS_CODE'] }}</td>
+        <td>{{ result['CASE_PACK'] }}</td>
+        <td>{{ result['CON_SIZE'] }}</td>
+        <td>{{ result['PRODUCT_NAME'] }}</td>
+        <td>{{ result['CASE_PACK'] }}</td>
+            <td><form action="/dashboard" method="POST"><input type="submit" value="Delete" class="btn btn-primary"></form></td>
+                <td><a href="show_store/{{ result['CS_CODE'] }}" class="btn btn-primary">Stores</a></td>
+    {% endfor %}
+    </tbody>
+    </table>
+    {% endblock hotlist_table %}
