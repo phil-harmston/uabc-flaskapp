@@ -17,8 +17,10 @@
     <ul class="nav navbar-nav navbar-fixed-top">
     </ul>
     <ul class="nav navbar-nav navbar-right">
-      {% if session['logged_in'] %}<a href = {{ url_for('logout') }} <span class= "glyphicon glyphicon-log-in">Logout</a>
-        {% else %}<a href = {{ url_for('create') }} <span class="glyphicon glyphicon-log-in">Create Account</a>
+      {% if session['logged_in'] %}<a href = {{ url_for('updateaccount') }} <span class= "glyphicon glyphicon-log-in">Account Settings</a>
+          <a href = {{ url_for('logout') }} <span class= "glyphicon glyphicon-log-in">Logout</a>
+        {% else %}<a href = {{ url_for('home') }} <span class= "glyphicon glyphicon-log-in">Login</a>
+          <a href = {{ url_for('create') }} <span class="glyphicon glyphicon-log-in">Create Account</a>
         {% endif %}
     </ul>
   </div>
@@ -37,6 +39,7 @@
     {% block hotlist_table %}
 
     {% endblock hotlist_table %}
+
 
       {% block footer %}
           <div id="footer">

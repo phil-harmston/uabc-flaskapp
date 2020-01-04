@@ -56,20 +56,52 @@ def connection():
 
     return c, con
 
+
+@app.route('/updateaccount', methods=['GET', 'POST'])
+def updateaccount():
+    form = generalforms.accountForm()
+    if not session.get('logged_in'):
+        return home()
+    if request.method == "GET":
+        return render_template('account.html', form=form)
+
+    if request.method == "POST":
+        email = request.form['email']
+        firstname = request.form['firstname']
+        lastname = request.form['lastname']
+        address = request.form['address']
+        city = request.form['city']
+        state = request.form['state']
+        zipcode = request.form['zipcode']
+        phone = request.form['phone']
+        passwd1 = request.form['pass1']
+        passwd2 = request.form['pass2']
+
+        return render_template('account.html', form=form)
+    else:
+        return render_template('createaccount.html', form=form)
+
+
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     if not session.get('logged_in'):
         return home()
 
+    c, con = connection()
+    hotlist_search = "select * FROM uabc.Inventory inner join uabc.HotList on Inventory.CS_CODE=HotList.CS_CODE where HotList.UserEmail = '{email}';".format(email=session['email'])
+    c.execute(hotlist_search)
+    columns = c.description
+
+    hotlist = [{columns[index][0]: column for index, column in enumerate(value)} for value in c.fetchall()]
+    #print(hotlist)
+    #print(session['email'])
+
     if request.method == "GET":
-        return render_template('dashboard.html')
-        c, con = connection()
-        hotlist_search = "SELECT CS_CODE, CON_SIZE, CASE_PACK, PRODUCT_NAME FROM `uabc`.`HotList` " \
-                              "WHERE CS_CODE = '{username}';".format(username=session['email'])
+        return render_template('dashboard.html', hotlist=hotlist)
 
     if request.method == "POST":
         searchval = request.form['csc_val']
-        print(searchval)
+        #print(searchval)
 
         inventorysearch = "SELECT CS_CODE, CON_SIZE, CASE_PACK, PRODUCT_NAME FROM `uabc`.`Inventory` " \
                               "WHERE CS_CODE = '{csc_val}';".format(csc_val=searchval)
@@ -82,13 +114,13 @@ def dashboard():
 
         results = [{columns[index][0]:column for index, column in enumerate(value)} for value in c.fetchall()]
         pprint.pprint(results)
-        return render_template('dashboard.html', results=results)
+        return render_template('dashboard.html', results=results, hotlist=hotlist)
 
 
     return render_template('dashboard.html')
 
 
-@app.route('/hotlist', methods=['POST'])
+@app.route('/hotlist', methods=['GET', 'POST'])
 def hotlist():
     if request.method == "POST":
         cs_code = request.form['cs_code']
@@ -104,6 +136,19 @@ def hotlist():
         con.close()
         return redirect('/dashboard')
 
+@app.route('/delete', methods=['GET', 'POST'])
+def delete():
+    if request.method == "GET":
+        cs_code = request.args
+        cs_code = (cs_code['delete'])
+        c, con = connection()
+
+        remove = "DELETE FROM uabc.HotList WHERE CS_CODE = '{CS_CODE}';".format(CS_CODE=cs_code)
+
+        c.execute(remove)
+        con.commit()
+        con.close()
+        return redirect('/dashboard')
 
 
 @app.route('/')
@@ -124,32 +169,30 @@ def login():
     if request.method == "POST":
         email = request.form['email']
         password = request.form['password']
-        # hash the password
 
-
-        # print(password)
-        # print(email)
         userinfosearch = "SELECT UserEmail, firstname, UserPass FROM `uabc`.`UserAccounts` " \
                          "WHERE UserEmail = '{email}';".format(email=email)
         c, con = connection()
         c.execute(userinfosearch)
         results = c.fetchall()
-
+        print(results)
         if len(results) == 1:
+
+
             for r in results:
                 thisemail = r[0]
                 thisuser = r[1]
                 stored_pwd = r[2]
 
             validpass = verify_password(stored_pwd, password)
-            print(r)
+
 
 
             if validpass:
                 session['logged_in'] = True
                 session['username'] = thisuser
                 session['email'] = thisemail
-                return render_template('dashboard.html')
+                return redirect('dashboard')
             else:
                 error = "invalid username or password"
                 return render_template('login.html', form=form, error=error)
@@ -183,7 +226,7 @@ def create():
 
             c.execute(info + "VALUES( %s, %s, %s, %s, %s, %s, %s, %s, %s)", (email, firstname, lastname, address, city, state, zipcode, phone, passwd))
             con.commit()
-            return render_template('login.html')
+            return redirect('login')
         else:
 
             return render_template('createaccount.html', form=form)

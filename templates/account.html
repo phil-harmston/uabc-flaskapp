@@ -1,15 +1,12 @@
 {% extends 'layout.html' %}
-
 {% block content %}
-
-
-    <div class="col-sm">
+<div class="col-sm">
 <div class="form-group">
 <div class='container'>
 <div class='login-form'>
-<form class="text-center border border-dark p-5" action="/createaccount" method="POST">
+<form class="text-center border border-dark p-5" action="/updateaccount" method="POST">
 
-            <legend><h1>New Account</h1></legend>
+            <legend><h1>Update Information</h1></legend>
 
 
     <div class='row'>
@@ -61,21 +58,8 @@
                 {{ form.phone}}</div>
     </div>
 
-    <div class='row'>
-         <div class="col-4">
-                {{ form.pass1.label }}</div>
-        <div class="col-4">
-                {{ form.pass2.label }}</div>
-    </div>
 
-    <div class='row'>
-         <div class="col-4">
-                {{ form.pass1 }}</div>
-        <div class="col-4">
-                {{ form.pass2 }}</div>
-    </div>
-
- <button class="btn btn-info my-4 btn-block" type="submit">Create Account</button>
+ <button class="btn btn-info my-4 btn-block" type="submit">Update Account</button>
 
 
 

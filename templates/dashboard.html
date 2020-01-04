@@ -3,21 +3,13 @@
 {% block content %}
 
 <div class='login-form'><form class = 'login-form' action="/dashboard" method="POST">
-
-
-
-
-                <div style = 'padding:20px'><legend><h4>Search Database</h4></legend>
+                <div style = 'padding:20px'><h4>Search Database</h4>
                <input type="text" class="login-field" value="" placeholder="CS_CODE" name="csc_val">
 
         <input type="submit" value="Search" class="btn btn-primary">
                 </div>
-
-
-
-
 </form>
-    </div>
+
     {% endblock content %}
 
     {% block search_table %}
@@ -38,15 +30,16 @@
     <th>Product Name</th>
     <th>Price</th>
     <th>Add</th>
-
+        {% if results|length > 0 %}
         <tr>{% for result in results %}</tr>
         <td>{{ result['CS_CODE'] }}</td>
         <td>{{ result['CASE_PACK'] }}</td>
         <td>{{ result['CON_SIZE'] }}</td>
         <td>{{ result['PRODUCT_NAME'] }}</td>
         <td>{{ result['CASE_PACK'] }}</td>
-            <td><form action="/hotlist" method="POST"><input type="hidden" value="{{ result['CS_CODE'] }}" name="cs_code"><input type="submit" class="btn btn-primary"></form></td>
+            <td><form action="/hotlist" method="POST"><input type="hidden" value="{{ result['CS_CODE'] }}" name="cs_code"><input type="submit" value="Add" class="btn btn-primary"></form></td>
     {% endfor %}
+    {% endif %}
     </tbody>
     </table>
     {% endblock search_table %}
@@ -72,15 +65,16 @@
     <th>Price</th>
     <th>Add</th>
     <th>Store</th>
-        <tr>{% for result in results %}</tr>
-        <td>{{ result['CS_CODE'] }}</td>
-        <td>{{ result['CASE_PACK'] }}</td>
-        <td>{{ result['CON_SIZE'] }}</td>
-        <td>{{ result['PRODUCT_NAME'] }}</td>
-        <td>{{ result['CASE_PACK'] }}</td>
-            <td><form action="/dashboard" method="POST"><input type="submit" value="Delete" class="btn btn-primary"></form></td>
-                <td><a href="show_store/{{ result['CS_CODE'] }}" class="btn btn-primary">Stores</a></td>
+        <tr>{% for product in hotlist %}</tr>
+        <td>{{ product['CS_CODE'] }}</td>
+        <td>{{ product['CASE_PACK'] }}</td>
+        <td>{{ product['CON_SIZE'] }}</td>
+        <td>{{ product['PRODUCT_NAME'] }}</td>
+        <td>{{ product['CASE_PACK'] }}</td>
+            <td><form action="/delete" method="GET"><button name="delete" type="submit" value="{{ product['CS_CODE'] }}" class="btn btn-primary">Delete</button></form></td>
+                <td><a href="show_store/{{ product['CS_CODE'] }}" class="btn btn-primary">Stores</a></td>
     {% endfor %}
     </tbody>
     </table>
+        </div>
     {% endblock hotlist_table %}
