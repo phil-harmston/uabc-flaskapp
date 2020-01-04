@@ -1,7 +1,0 @@
-MYSQL_DATABASE_HOST = 'localhost'
-MYSQL_DATABASE_USER = 'utahabcadmin'
-MYSQL_DATABASE_PASSWORD = 'mysqlpass'
-MYSQL_DATABASE_DB = 'uabc'
-SECRET_KEY = 'Sm9obiBTY2hyb20ga2lja3MgYXNz'
-FLASK_DEBUG = 1
-FLASK_ENV = 'development'
