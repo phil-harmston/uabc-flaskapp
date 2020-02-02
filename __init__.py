@@ -1,6 +1,8 @@
 from flask import Flask, flash, redirect, render_template, request, session, abort, url_for
 from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
 import os
+import shutil
+import random
 import hashlib
 import binascii
 from flaskext.mysql import MySQL
@@ -8,7 +10,23 @@ from random import randint
 import re
 import generalforms
 import pprint
-app = Flask(__name__, instance_path='/home/phil/python/abcapp')
+
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.common.keys import Keys
+#from selenium.webdriver.chrome.options import Options
+import time
+from bs4 import BeautifulSoup as bs
+import re
+from lxml import etree
+import pandas as pd
+import html5lib
+
+
+
+
+
+app = Flask(__name__, instance_path='/home/phil/python/abcapp', static_url_path='/static')
 
 app.config.from_pyfile('instance/config.py')
 
@@ -25,6 +43,70 @@ def emailvalidation(email):
     else:
         return False
 
+def check_sql_string(sql, values):
+    unique = "%PARAMETER%"
+    sql = sql.replace("?", unique)
+    for v in values: sql = sql.replace(unique, repr(v), 1)
+    return sql
+
+def soup_it(html, sku):
+    soup = bs(html, 'lxml')
+    infodict = {}
+
+    try:
+        span = soup.find('span', id="ContentPlaceHolderBody_lblSku")
+        infodict.update({'SKU': span.text})
+    except AttributeError:
+        pass
+
+    try:
+        span = soup.find('span', id="ContentPlaceHolderBody_lblDesc")
+        infodict.update({'Description': span.text})
+    except AttributeError:
+        pass
+
+    try:
+        span = soup.find('span', id="ContentPlaceHolderBody_lblWhsInv")
+        infodict.update({'Warehouse_Inventory': span.text})
+    except AttributeError:
+        pass
+
+    try:
+        span = soup.find('span', id="ContentPlaceHolderBody_lblWhsOnOrder")
+        infodict.update({'Warehouse_On_Order': span.text})
+    except AttributeError:
+        pass
+
+    try:
+        span = soup.find('span', id="ContentPlaceHolderBody_lblStatus")
+        infodict.update({'Status': span.text})
+    except AttributeError:
+        pass
+
+    try:
+        span = soup.find('span', id="ContentPlaceHolderBody_lblPrice")
+        infodict.update({'Price': span.text})
+    except AttributeError:
+        pass
+
+    try:
+        dfs = pd.read_html(html, header=0)
+        for df in dfs:
+            print(df)
+    except ValueError as e:
+        print('Error: ' + str(e))
+
+    print(infodict)
+    price = str(infodict.get('Price'))
+    status = str(infodict.get('Status'))
+
+    update_data = """UPDATE LIQUOR SET CURRENT_PRICE= ?, STATUS=? WHERE CS_CODE=?;"""
+    values = (price, status, sku)
+    print(check_sql_string(update_data, values))
+        #cursor.execute(check_sql_string(update_data, values))
+        #mydb.commit()
+
+        #time.sleep(5)
 
 def hash_password(password):
     """Hash a password for storing."""
@@ -86,6 +168,15 @@ def updateaccount():
 def dashboard():
     if not session.get('logged_in'):
         return home()
+    #get profile picture
+    profile_pic = 'tux1.png'
+
+
+
+
+
+
+
 
     c, con = connection()
     hotlist_search = "select * FROM uabc.Inventory inner join uabc.HotList on Inventory.CS_CODE=HotList.CS_CODE where HotList.UserEmail = '{email}';".format(email=session['email'])
@@ -97,14 +188,54 @@ def dashboard():
     #print(session['email'])
 
     if request.method == "GET":
-        return render_template('dashboard.html', hotlist=hotlist)
+        return render_template('dashboard.html', hotlist=hotlist, profile_pic=profile_pic)
 
     if request.method == "POST":
-        searchval = request.form['csc_val']
+
+        # Start webdriver
+        #----------------------------------------------------------------------
+        # id of the Item CSC Code
+        id = "ContentPlaceHolderBody_tbCscCode"
+
+        # name of the Item Name box
+        name = "ctl00$ContentPlaceHolderBody$tbCscCode"
+        # options = Options()
+        # options.add_argument("--headless")
+        #driver = webdriver.Chrome('/snap/bin/chromium.chromedriver')
+
+        options = FirefoxOptions()
+        options.add_argument("--headless")
+        driver = webdriver.Firefox(options=options)
+        driver.get("https://webapps2.abc.utah.gov/Production/OnlineInventoryQuery/IQ/InventoryQuery.aspx")
+        itemNameSearchBox = driver.find_element_by_name("ctl00$ContentPlaceHolderBody$tbItemName")
+
+        # find the search box on the webpage
+
+        #print(sku)
+
+
+
+
+
+
+
+
+
+    # End Web driver
+    #----------------------------------------------------------------------
+        sku = request.form['csc_val']
+        itemIdSearchBox = driver.find_element_by_id(id)
+        itemIdSearchBox.send_keys(sku)
+        itemIdSearchBox.send_keys(Keys.ENTER)
+        html = driver.page_source
+        soup_it(html, sku)
+        time.sleep(5)
+        driver.close()
+
         #print(searchval)
 
         inventorysearch = "SELECT CS_CODE, CON_SIZE, CASE_PACK, PRODUCT_NAME FROM `uabc`.`Inventory` " \
-                              "WHERE CS_CODE = '{csc_val}';".format(csc_val=searchval)
+            "WHERE CS_CODE = '{csc_val}';".format(csc_val=sku)
 
 
         c, con = connection()
@@ -114,7 +245,7 @@ def dashboard():
 
         results = [{columns[index][0]:column for index, column in enumerate(value)} for value in c.fetchall()]
         pprint.pprint(results)
-        return render_template('dashboard.html', results=results, hotlist=hotlist)
+        return render_template('dashboard.html', results=results, hotlist=hotlist, profile_pic=profile_pic)
 
 
     return render_template('dashboard.html')
@@ -223,9 +354,26 @@ def create():
             passwd = hash_password(passwd)
 
             info = "INSERT INTO uabc.UserAccounts(UserEmail, FirstName, LastName, Address, City, State, ZipCode, Phone, UserPass) "
-
+            c,con =connection()
             c.execute(info + "VALUES( %s, %s, %s, %s, %s, %s, %s, %s, %s)", (email, firstname, lastname, address, city, state, zipcode, phone, passwd))
             con.commit()
+            con.close()
+            # create a directory for our user
+            usertree = '/home/phil/python/abcapp/users/{useremail}/profile/imgs'.format(useremail=email)
+            os.makedirs(usertree)
+            # copy default information to that directory
+            defaultprofile = '/home/phil/python/abcapp/default_profile/'
+            target = '/home/phil/python/abcapp/static/users/{useremail}/profile/'.format(useremail=email)
+            src_files = os.listdir(defaultprofile)
+
+            for file in src_files:
+                full_file_name = os.path.join(defaultprofile, file)
+                try:
+                    if os.path.isfile(full_file_name):
+                        shutil.copy(full_file_name, target)
+                except:
+                    print('not copied ' + full_file_name)
+
             return redirect('login')
         else:
 

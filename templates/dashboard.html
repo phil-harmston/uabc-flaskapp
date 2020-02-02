@@ -1,5 +1,10 @@
 {% extends 'layout.html' %}
+{% block user_image %}
 
+    <img src="/static/users/{{ session['email']}}/profile/gangster.jpeg" class="img-fluid img-circle">
+          <h5>Hello {{ session['username'] }}</h5>
+
+{% endblock user_image %}
 {% block content %}
 
 <div class='login-form'><form class = 'login-form' action="/dashboard" method="POST">

@@ -5,14 +5,13 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
     <title>{% block title %}{% endblock %} - My Webpage</title>
-    {% endblock %}
+    {% endblock head %}
    <nav class="navbar navbar-inverse">
   <div class="container-fluid">
     <div class="navbar-header">
         <h4>Custom Utah Alcohol preference research database</h4>
-        {% if session['logged_in'] %}
-        <h5>Hello {{ session['username'] }}</h5>
-        {% endif %}
+
+
     </div>
     <ul class="nav navbar-nav navbar-fixed-top">
     </ul>
@@ -28,6 +27,11 @@
   </head>
   <body>
 
+    {% block user_image %}
+ {% if session['logged_in'] %}
+            <h5>Hello {{ session['username'] }}</h5>
+        {% endif %}
+    {% endblock user_image %}
     {% block content %}
 
     {% endblock content%}
