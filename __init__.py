@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup as bs
 import re
 from lxml import etree
 import pandas as pd
-import html5lib
+
 
 
 
@@ -36,6 +36,78 @@ mysql.init_app(app)
 con = mysql.connect()
 c = con.cursor()
 
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
+    form = generalforms.searchCSCCode()
+    if not session.get('logged_in'):
+        return home()
+    #get profile picture
+    profile_pic = 'tux1.png'
+
+
+    c, con = connection()
+    hotlist_search = "select * FROM uabc.Inventory inner join uabc.HotList on Inventory.CS_CODE=HotList.CS_CODE where HotList.UserEmail = '{email}';".format(email=session['email'])
+    c.execute(hotlist_search)
+    columns = c.description
+
+    hotlist = [{columns[index][0]: column for index, column in enumerate(value)} for value in c.fetchall()]
+
+    if request.method == "GET":
+        return render_template('dashboard.html', hotlist=hotlist, profile_pic=profile_pic, form=form)
+
+    if request.method == "POST":
+        sku = request.form['csc_val']
+
+
+        # Start webdriver
+        #----------------------------------------------------------------------
+        # id of the Item CSC Code
+        id = "ContentPlaceHolderBody_tbCscCode"
+
+        # name of the Item Name box
+        name = "ctl00$ContentPlaceHolderBody$tbCscCode"
+
+        options = FirefoxOptions()
+        options.add_argument("--headless")
+        driver = webdriver.Firefox(options=options)
+        driver.get("https://webapps2.abc.utah.gov/Production/OnlineInventoryQuery/IQ/InventoryQuery.aspx")
+        itemNameSearchBox = driver.find_element_by_name("ctl00$ContentPlaceHolderBody$tbItemName")
+
+
+
+
+
+    # End Web driver
+    #----------------------------------------------------------------------
+
+
+
+
+        itemIdSearchBox = driver.find_element_by_id(id)
+        itemIdSearchBox.send_keys(sku)
+        itemIdSearchBox.send_keys(Keys.ENTER)
+        time.sleep(4)
+        html = driver.page_source
+        soup_it(html, sku, c)
+
+        driver.close()
+
+
+        inventorysearch = "SELECT CS_CODE, CON_SIZE, CASE_PACK, PRODUCT_NAME,  STATUS, CURRENT_PRICE FROM `uabc`.`Inventory` " \
+            "WHERE CS_CODE = '{csc_val}';".format(csc_val=sku)
+
+        c = con.cursor()
+        c.execute(inventorysearch)
+        columns = c.description
+
+        results = [{columns[index][0]:column for index, column in enumerate(value)} for value in c.fetchall()]
+        c.close()
+        #pprint.pprint(results)
+        return render_template('dashboard.html', results=results, hotlist=hotlist, profile_pic=profile_pic, form=form)
+
+
+    return render_template('dashboard.html', form=form)
+
 def emailvalidation(email):
     regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
     if (re.search(regex, email)):
@@ -49,7 +121,7 @@ def check_sql_string(sql, values):
     for v in values: sql = sql.replace(unique, repr(v), 1)
     return sql
 
-def soup_it(html, sku):
+def soup_it(html, sku, c):
     soup = bs(html, 'lxml')
     infodict = {}
 
@@ -81,32 +153,61 @@ def soup_it(html, sku):
         span = soup.find('span', id="ContentPlaceHolderBody_lblStatus")
         infodict.update({'Status': span.text})
     except AttributeError:
-        pass
+        print("No Status found")
 
     try:
         span = soup.find('span', id="ContentPlaceHolderBody_lblPrice")
         infodict.update({'Price': span.text})
     except AttributeError:
-        pass
+        print("No price found")
 
     try:
         dfs = pd.read_html(html, header=0)
         for df in dfs:
-            print(df)
+            records = df.to_dict('records')
+            for r in records:
+                recordStoreRecords(r, sku)
+                print(r)
     except ValueError as e:
         print('Error: ' + str(e))
 
-    print(infodict)
+
     price = str(infodict.get('Price'))
     status = str(infodict.get('Status'))
 
-    update_data = """UPDATE LIQUOR SET CURRENT_PRICE= ?, STATUS=? WHERE CS_CODE=?;"""
+    c = con.cursor()
+    update_data = """UPDATE Inventory SET CURRENT_PRICE= ?, STATUS=? WHERE CS_CODE=?;"""
     values = (price, status, sku)
-    print(check_sql_string(update_data, values))
-        #cursor.execute(check_sql_string(update_data, values))
-        #mydb.commit()
+    #print(check_sql_string(update_data, values))
+    c.execute(check_sql_string(update_data, values))
+    con.commit()
+    c.close()
 
-        #time.sleep(5)
+def recordStoreRecords(r, sku):
+    store_number = r['Store']
+    store_number = "STORE_" + str(store_number)
+    store_name = r['Name']
+    quantity = r['Qty']
+    store_address = r['Address']
+    store_city = r['City']
+    store_phone = r['Phone']
+
+    c = con.cursor()
+    insert_data = "INSERT INTO Stores (STORE_ID, STORE_NAME ,ADDRESS, CITY, PHONE) VALUES ('{0}','{1}','{2}','{3}', '{4}')".format(store_number, store_name, store_address, store_city, store_phone)
+    try:
+        c.execute(insert_data)
+        print(insert_data)
+        con.commit()
+    except:
+        pass
+    update_data = "UPDATE Inventory SET {0}={1} WHERE CS_CODE='{2}';".format(store_number, quantity, sku)
+    try:
+        c.execute(update_data)
+        con.commit()
+    except:
+        pass
+    c.close()
+
 
 def hash_password(password):
     """Hash a password for storing."""
@@ -164,98 +265,16 @@ def updateaccount():
         return render_template('createaccount.html', form=form)
 
 
-@app.route('/dashboard', methods=['GET', 'POST'])
-def dashboard():
-    if not session.get('logged_in'):
-        return home()
-    #get profile picture
-    profile_pic = 'tux1.png'
 
-
-
-
-
-
-
-
-    c, con = connection()
-    hotlist_search = "select * FROM uabc.Inventory inner join uabc.HotList on Inventory.CS_CODE=HotList.CS_CODE where HotList.UserEmail = '{email}';".format(email=session['email'])
-    c.execute(hotlist_search)
-    columns = c.description
-
-    hotlist = [{columns[index][0]: column for index, column in enumerate(value)} for value in c.fetchall()]
-    #print(hotlist)
-    #print(session['email'])
-
-    if request.method == "GET":
-        return render_template('dashboard.html', hotlist=hotlist, profile_pic=profile_pic)
-
-    if request.method == "POST":
-
-        # Start webdriver
-        #----------------------------------------------------------------------
-        # id of the Item CSC Code
-        id = "ContentPlaceHolderBody_tbCscCode"
-
-        # name of the Item Name box
-        name = "ctl00$ContentPlaceHolderBody$tbCscCode"
-        # options = Options()
-        # options.add_argument("--headless")
-        #driver = webdriver.Chrome('/snap/bin/chromium.chromedriver')
-
-        options = FirefoxOptions()
-        options.add_argument("--headless")
-        driver = webdriver.Firefox(options=options)
-        driver.get("https://webapps2.abc.utah.gov/Production/OnlineInventoryQuery/IQ/InventoryQuery.aspx")
-        itemNameSearchBox = driver.find_element_by_name("ctl00$ContentPlaceHolderBody$tbItemName")
-
-        # find the search box on the webpage
-
-        #print(sku)
-
-
-
-
-
-
-
-
-
-    # End Web driver
-    #----------------------------------------------------------------------
-        sku = request.form['csc_val']
-        itemIdSearchBox = driver.find_element_by_id(id)
-        itemIdSearchBox.send_keys(sku)
-        itemIdSearchBox.send_keys(Keys.ENTER)
-        html = driver.page_source
-        soup_it(html, sku)
-        time.sleep(5)
-        driver.close()
-
-        #print(searchval)
-
-        inventorysearch = "SELECT CS_CODE, CON_SIZE, CASE_PACK, PRODUCT_NAME FROM `uabc`.`Inventory` " \
-            "WHERE CS_CODE = '{csc_val}';".format(csc_val=sku)
-
-
-        c, con = connection()
-
-        c.execute(inventorysearch)
-        columns = c.description
-
-        results = [{columns[index][0]:column for index, column in enumerate(value)} for value in c.fetchall()]
-        pprint.pprint(results)
-        return render_template('dashboard.html', results=results, hotlist=hotlist, profile_pic=profile_pic)
-
-
-    return render_template('dashboard.html')
 
 
 @app.route('/hotlist', methods=['GET', 'POST'])
 def hotlist():
     if request.method == "POST":
-        cs_code = request.form['cs_code']
+        cs_code = request.form['add_hotlist']
+        #print(cs_code)
         UserEmail = session['email']
+        #print(UserEmail)
 
         c, con = connection()
 
@@ -264,8 +283,16 @@ def hotlist():
         c.execute(insert + "VALUES( %s, %s)",
                   (UserEmail, cs_code))
         con.commit()
-        con.close()
+
         return redirect('/dashboard')
+
+
+
+
+
+
+
+
 
 @app.route('/delete', methods=['GET', 'POST'])
 def delete():
@@ -278,7 +305,7 @@ def delete():
 
         c.execute(remove)
         con.commit()
-        con.close()
+
         return redirect('/dashboard')
 
 
@@ -306,7 +333,6 @@ def login():
         c, con = connection()
         c.execute(userinfosearch)
         results = c.fetchall()
-        print(results)
         if len(results) == 1:
 
 
@@ -396,22 +422,6 @@ def contact():
             return render_template('success.html')
     elif request.method == 'GET':
             return render_template('contact.html', form=form)
-
-
-# @app.route('/test', methods=['GET', 'POST'])
-# def test():
-#     form = accountForm(request.form)
-#     if request.method == 'POST':
-#         firstname = request.form['firstname']
-#         print(firstname)
-#
-#     if form.validate():
-#         # Save the comment here.
-#         flash('Hello ' + name)
-#     else:
-#         flash('All the form fields are required. ')
-#         return render_template('test.html', form=form)
-
 
 
 

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, TextAreaField, SubmitField, RadioField, SelectField, StringField
+from wtforms import IntegerField, TextAreaField, SubmitField, RadioField, SelectField, StringField, PasswordField
 from wtforms import validators, ValidationError
 
 class contactform(FlaskForm):
@@ -22,13 +22,17 @@ class accountForm(FlaskForm):
     zipcode = StringField('Zip Code', [validators.DataRequired('Zip Code')])
     email = StringField('Email', [validators.DataRequired('Email Address')])
     phone = StringField('Phone', [validators.DataRequired('Phone')])
-    pass1 = StringField('Password', [validators.DataRequired('Password')])
-    pass2 = StringField('Re-type Password', [validators.DataRequired('Re-Type Password')])
+    pass1 = PasswordField('Password', [validators.DataRequired('Password')])
+    pass2 = PasswordField('Re-type Password', [validators.DataRequired('Re-Type Password')])
     submit = SubmitField("Send")
-class searchForm(FlaskForm):
-    csc_val = StringField('Search Items in Database', [validators.input_required('Search')])
+class searchCSCCode(FlaskForm):
+    csc_val = StringField('Search by CSC Number', [validators.input_required('Search')])
     submit = SubmitField("SEARCH")
 
 class loginForm(FlaskForm):
     email = StringField('User Email', [validators.DataRequired('Email Address')])
-    password = StringField('password', [validators.DataRequired('Password')])
+    password = PasswordField('password', [validators.DataRequired('Password')])
+
+class searchProductName(FlaskForm):
+    product_name = StringField('Search by name', [validators.input_required('Search')])
+    submit = SubmitField("SEARCH")

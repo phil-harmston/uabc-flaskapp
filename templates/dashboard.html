@@ -1,18 +1,15 @@
 {% extends 'layout.html' %}
 {% block user_image %}
 
-    <img src="/static/users/{{ session['email']}}/profile/gangster.jpeg" class="img-fluid img-circle">
+
           <h5>Hello {{ session['username'] }}</h5>
 
 {% endblock user_image %}
 {% block content %}
-
 <div class='login-form'><form class = 'login-form' action="/dashboard" method="POST">
-                <div style = 'padding:20px'><h4>Search Database</h4>
-               <input type="text" class="login-field" value="" placeholder="CS_CODE" name="csc_val">
 
-        <input type="submit" value="Search" class="btn btn-primary">
-                </div>
+                {{form.csc_val}}
+    <input type="submit" value="Search By CSC Code" class="btn btn-primary">
 </form>
 
     {% endblock content %}
@@ -20,29 +17,36 @@
     {% block search_table %}
     <table class = 'table table-striped'>
     <colgroup>
-        <col style="width:10%">
-        <col style="width:10%">
+        <col style="width:5%">
+        <col style="width:5%">
+        <col style="width:5%">
         <col style="width:20%">
-        <col style="width:30%">
+        <col style="width:5%">
         <col style="width:20%">
+        <col style="width:5%">
         <col style="width:5%">
 
   </colgroup>
     <tbody>
     <th>CS Code</th>
     <th>Case Count</th>
-    <th>Container Count</th>
+    <th>Container Size</th>
     <th>Product Name</th>
     <th>Price</th>
-    <th>Add</th>
+    <th>Status</th>
+    <th></th>
+    <th></th>
         {% if results|length > 0 %}
         <tr>{% for result in results %}</tr>
         <td>{{ result['CS_CODE'] }}</td>
         <td>{{ result['CASE_PACK'] }}</td>
         <td>{{ result['CON_SIZE'] }}</td>
         <td>{{ result['PRODUCT_NAME'] }}</td>
-        <td>{{ result['CASE_PACK'] }}</td>
-            <td><form action="/hotlist" method="POST"><input type="hidden" value="{{ result['CS_CODE'] }}" name="cs_code"><input type="submit" value="Add" class="btn btn-primary"></form></td>
+        <td>{{ result['CURRENT_PRICE'] }}</td>
+        <td>{{ result['STATUS'] }}</td>
+
+            <td><form action="/hotlist" method="POST"><input type="hidden" value="{{ result['CS_CODE'] }}" name="add_hotlist"><input type="submit" value="Add" class="btn btn-primary"></form></td>
+            <td><form action="/hotlist" method="POST"><input type="hidden" value="{{ result['CS_CODE'] }}" name="update_price"><input type="submit" value="Update" class="btn btn-primary"></form></td>
     {% endfor %}
     {% endif %}
     </tbody>
@@ -54,10 +58,11 @@
         <h3>Hot List</h3>
     <table class = 'table table-striped'>
     <colgroup>
-        <col style="width:10%">
-        <col style="width:10%">
+        <col style="width:5%">
+        <col style="width:5%">
+        <col style="width:5%">
         <col style="width:20%">
-        <col style="width:30%">
+        <col style="width:5%">
         <col style="width:20%">
         <col style="width:5%">
         <col style="width:5%">
@@ -65,17 +70,19 @@
     <tbody>
     <th>CS Code</th>
     <th>Case Count</th>
-    <th>Container Count</th>
+    <th>Container Size</th>
     <th>Product Name</th>
     <th>Price</th>
-    <th>Add</th>
-    <th>Store</th>
+    <th>Availablity</th>
+    <th></th>
+    <th></th>
         <tr>{% for product in hotlist %}</tr>
-        <td>{{ product['CS_CODE'] }}</td>
+         <td>{{ product['CS_CODE'] }}</td>
         <td>{{ product['CASE_PACK'] }}</td>
         <td>{{ product['CON_SIZE'] }}</td>
         <td>{{ product['PRODUCT_NAME'] }}</td>
-        <td>{{ product['CASE_PACK'] }}</td>
+        <td>{{ product['CURRENT_PRICE'] }}</td>
+        <td>{{ product['STATUS'] }}</td>
             <td><form action="/delete" method="GET"><button name="delete" type="submit" value="{{ product['CS_CODE'] }}" class="btn btn-primary">Delete</button></form></td>
                 <td><a href="show_store/{{ product['CS_CODE'] }}" class="btn btn-primary">Stores</a></td>
     {% endfor %}
