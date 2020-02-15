@@ -1,15 +1,10 @@
-from flask import Flask, flash, redirect, render_template, request, session, abort, url_for
-from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
+from flask import Flask, flash, redirect, render_template, request, session, Blueprint
 import os
 import shutil
-import random
 import hashlib
 import binascii
 from flaskext.mysql import MySQL
-from random import randint
-import re
 import generalforms
-import pprint
 
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
@@ -18,23 +13,35 @@ from selenium.webdriver.common.keys import Keys
 import time
 from bs4 import BeautifulSoup as bs
 import re
-from lxml import etree
 import pandas as pd
-
-
-
-
+from userinfo import userinfo
+# import blueprint routes
+# from updateaccounts import routes
+# from updateaccounts.routes import mod
 
 
 app = Flask(__name__, instance_path='/home/phil/python/abcapp', static_url_path='/static')
-
+# sets up the app configuration from a file
 app.config.from_pyfile('instance/config.py')
+
+
+
+
+
+
 
 # connection to the database
 mysql = MySQL()
 mysql.init_app(app)
 con = mysql.connect()
 c = con.cursor()
+
+#registers the updateaccount blueprint
+# app.register_blueprint(mod)
+
+
+
+
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
@@ -46,8 +53,11 @@ def dashboard():
 
 
     c, con = connection()
+    # return a search on items from the hotlist table.
     hotlist_search = "select * FROM uabc.Inventory inner join uabc.HotList on Inventory.CS_CODE=HotList.CS_CODE where HotList.UserEmail = '{email}';".format(email=session['email'])
     c.execute(hotlist_search)
+
+    # Use the column headers as the dictionary key on the search
     columns = c.description
 
     hotlist = [{columns[index][0]: column for index, column in enumerate(value)} for value in c.fetchall()]
@@ -77,9 +87,6 @@ def dashboard():
 
 
 
-    # End Web driver
-    #----------------------------------------------------------------------
-
 
 
 
@@ -91,6 +98,8 @@ def dashboard():
         soup_it(html, sku, c)
 
         driver.close()
+        # End Web driver
+        # ----------------------------------------------------------------------
 
 
         inventorysearch = "SELECT CS_CODE, CON_SIZE, CASE_PACK, PRODUCT_NAME,  STATUS, CURRENT_PRICE FROM `uabc`.`Inventory` " \
@@ -242,10 +251,30 @@ def connection():
 
 @app.route('/updateaccount', methods=['GET', 'POST'])
 def updateaccount():
-    form = generalforms.accountForm()
+    email = session['email']
+    userinfosearch = "SELECT * FROM `uabc`.`UserAccounts` " \
+                     "WHERE UserEmail = '{email}';".format(email=email)
+    c, con = connection()
+    c.execute(userinfosearch)
+
+    columns = c.description
+    # thisuser is a list of dictionaries
+    thisuser = [{columns[index][0]: column for index, column in enumerate(value)} for value in c.fetchall()]
+    # pulls the first item out becomes a dictionary
+    thisuser = thisuser[0]
+
+    userobj = userinfo(**thisuser)
+
+    con.close()
+
+    form = generalforms.accountForm(obj=userobj)
     if not session.get('logged_in'):
         return home()
     if request.method == "GET":
+
+
+
+
         return render_template('account.html', form=form)
 
     if request.method == "POST":
@@ -263,7 +292,6 @@ def updateaccount():
         return render_template('account.html', form=form)
     else:
         return render_template('createaccount.html', form=form)
-
 
 
 
@@ -324,9 +352,9 @@ def logout():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = generalforms.loginForm()
-    if request.method == "POST":
-        email = request.form['email']
-        password = request.form['password']
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
 
         userinfosearch = "SELECT UserEmail, firstname, UserPass FROM `uabc`.`UserAccounts` " \
                          "WHERE UserEmail = '{email}';".format(email=email)
@@ -347,13 +375,12 @@ def login():
 
             if validpass:
                 session['logged_in'] = True
-                session['username'] = thisuser
+                session['name'] = thisuser
                 session['email'] = thisemail
                 return redirect('dashboard')
-            else:
-                error = "invalid username or password"
-                return render_template('login.html', form=form, error=error)
+
         else:
+            flash("invalid username or password")
             return render_template('login.html', form=form)
     else:
         return render_template('login.html', form=form)

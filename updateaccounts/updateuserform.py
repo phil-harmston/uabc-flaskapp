@@ -1,18 +1,6 @@
 from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import IntegerField, TextAreaField, SubmitField, RadioField, SelectField, StringField, PasswordField
 from wtforms import validators, ValidationError
-
-class contactform(FlaskForm):
-    name = StringField("Name Of Student", [validators.DataRequired("Please enter your name.")])
-    Gender = RadioField('Gender', choices=[('M', 'Male'), ('F', 'Female')])
-    Address = TextAreaField("Address")
-    email = StringField("Email", [validators.DataRequired("Please enter your email address."),
-                                validators.Email("Please enter your email address.")])
-    Age = IntegerField("age")
-    language = SelectField('Languages', choices=[('cpp', 'C++'),
-                                                 ('py', 'Python')])
-    submit = SubmitField("Send")
-
 class accountForm(FlaskForm):
     firstname = StringField('First Name', [validators.DataRequired('First Name')])
     lastname = StringField('Last Name', [validators.DataRequired('Last Name')])

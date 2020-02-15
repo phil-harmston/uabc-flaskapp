@@ -12,11 +12,23 @@
 
 <form class="text-center border border-dark p-5" action="/login" method="POST">
 
-
+    {{ form.csrf_token }}
     {{ form.email.label }}
     {{ form.email }}
+
     {{ form.password.label }}
     {{ form.password }}
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class ="alert alert-danger">
+        {% for message in get_flashed_messages() %}
+        {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+
 
             <input type="submit" value='Login' class="btn btn-primary">
 
@@ -24,9 +36,8 @@
 
 
 </form>
-    {% if error %}
-    {{ error }}
-    {% endif %}
+
+
 
     </div>
     </div>
