@@ -81,7 +81,8 @@ def soup_it(html, sku, c):
     price = str(infodict.get('Price'))
     status = str(infodict.get('Status'))
 
-    c = con.cursor()
+    c, con = connection()
+
     update_data = """UPDATE Inventory SET CURRENT_PRICE= ?, STATUS=? WHERE CS_CODE=?;"""
     values = (price, status, sku)
     #print(check_sql_string(update_data, values))
@@ -98,7 +99,7 @@ def recordStoreRecords(r, sku):
     store_city = r['City']
     store_phone = r['Phone']
 
-    c = con.cursor()
+    c, con = connection()
     insert_data = "INSERT INTO Stores (STORE_ID, STORE_NAME ,ADDRESS, CITY, PHONE) VALUES ('{0}','{1}','{2}','{3}', '{4}')".format(store_number, store_name, store_address, store_city, store_phone)
     try:
         c.execute(insert_data)
