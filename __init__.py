@@ -37,8 +37,8 @@ app = Flask(__name__, instance_path='/home/phil/python/abcapp', static_url_path=
 # sets up the app configuration from a file
 app.config.from_pyfile('instance/config.py')
 
-#create a login object
-login_manager = LoginManager(app)
+
+
 
 #register routes for our program
 app.register_blueprint(update_account, url_prefix="/")

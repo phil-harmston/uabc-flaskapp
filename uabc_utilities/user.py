@@ -1,7 +1,9 @@
 from uabc_utilities.uabc_util import connection
+from flask_login import LoginManager, UserMixin
 
 
-class userinfo:
+c, con = connection()
+class User(UserMixin):
 
     def __init__(self, **kwargs):
         self.user_id = kwargs['UserID']
@@ -27,11 +29,21 @@ class userinfo:
         print(results)
         return results
 
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.get_id(int(user_id))
+
     def is_active(self):
         pass
 
-    def get_id(self):
-        pass
+    def get_id(user_id):
+        idsearch = "SELECT * FROM `uabc`.`UserAccounts` " \
+                         "WHERE UserID = '{user_id}';".format(UserID=user_id)
+        c, con = connection()
+        c.execute(idsearch)
+        results = c.fetchall()
+        print(results)
+        return id
 
     def is_authenticated(self):
         pass
