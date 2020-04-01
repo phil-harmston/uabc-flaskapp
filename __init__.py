@@ -13,7 +13,8 @@ from flask_login import LoginManager, UserMixin
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.common.keys import Keys
-#from selenium.webdriver.chrome.options import Options
+
+# import various files
 import time
 from bs4 import BeautifulSoup as bs
 import re
@@ -29,6 +30,7 @@ from dashboard.hotlist import my_hotlist
 from user_login.logout import user_logout
 from dashboard.delete import delete_record
 from uabc_utilities import user
+
 # import custom utilities from our util files
 from uabc_utilities.uabc_util import connection, soup_it
 
@@ -51,6 +53,6 @@ app.register_blueprint(delete_record, url_prefix="/")
 
 
 
-
 if __name__ == '__main__':
+
     app.run(debug=True, host='127.0.0.1', port=5000)
