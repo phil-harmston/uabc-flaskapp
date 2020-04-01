@@ -1,7 +1,7 @@
 from flask import Flask, flash, redirect, render_template, request, session, Blueprint
 from uabc_utilities.uabc_util import connection
-from accounts.updateform import accountForm
-from userinfo import userinfo
+from accounts.accountform import accountForm
+from uabc_utilities import user
 update_account = Blueprint('update_account', __name__)
 
 @update_account.route('/updateaccount', methods=['GET', 'POST'])
@@ -19,7 +19,7 @@ def updateaccount():
     # pulls the first item out becomes a dictionary
     thisuser = thisuser[0]
 
-    userobj = userinfo(**thisuser)
+    userobj = user(**thisuser)
 
     con.close()
 

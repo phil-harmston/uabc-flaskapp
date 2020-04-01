@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 import os
 import hashlib
 import binascii
@@ -146,4 +146,29 @@ def connection():
 
     return c, con
 
+
+def validate_user(email, password):
+    userinfosearch = "SELECT UserEmail, firstname, UserPass FROM `uabc`.`UserAccounts` " \
+                         "WHERE UserEmail = '{email}';".format(email=email)
+    c, con = connection()
+    c.execute(userinfosearch)
+    results = c.fetchall()
+
+    if len(results) == 1:
+
+        for r in results:
+            thisemail = r[0]
+            thisuser = r[1]
+            stored_pwd = r[2]
+
+        validpass = verify_password(stored_pwd, password)
+
+        if validpass:
+            session['logged_in'] = True
+            session['name'] = thisuser
+            session['email'] = thisemail
+            return True
+
+    else:
+        return False
 
