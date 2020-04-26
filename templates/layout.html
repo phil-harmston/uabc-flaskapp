@@ -16,7 +16,7 @@
     <ul class="nav navbar-nav navbar-fixed-top">
     </ul>
     <ul class="nav navbar-nav navbar-right">
-      {% if session['logged_in'] %}<a href = {{ url_for('updateaccount') }} <span class= "glyphicon glyphicon-log-in">Account Settings</a>
+      {% if session['logged_in'] %}<a href = {{ url_for('update_account.updateaccount') }} <span class= "glyphicon glyphicon-log-in">Account Settings</a>
           <a href = {{ url_for('logout') }} <span class= "glyphicon glyphicon-log-in">Logout</a>
           <a href = {{ url_for('dashboard') }} <span class= "glyphicon glyphicon-log-in">Dashboard</a>
         {% else %}<a href = {{ url_for('home') }} <span class= "glyphicon glyphicon-log-in">Login</a>
