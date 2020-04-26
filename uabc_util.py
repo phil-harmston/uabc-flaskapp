@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 import os
+import shutil
 import hashlib
 import binascii
 from flaskext.mysql import MySQL
@@ -119,8 +120,7 @@ def recordStoreRecords(r, sku):
 def hash_password(password):
     """Hash a password for storing."""
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
-    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
-                                  salt, 100000)
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), salt, 100000)
     pwdhash = binascii.hexlify(pwdhash)
     return (salt + pwdhash).decode('ascii')
 
@@ -136,7 +136,6 @@ def verify_password(stored_password, provided_password):
     return pwdhash == stored_password
 
 
-
 def connection():
     app.config.from_pyfile('instance/config.py')
     mysql = MySQL(app)
@@ -147,28 +146,5 @@ def connection():
     return c, con
 
 
-def validate_user(email, password):
-    userinfosearch = "SELECT UserEmail, firstname, UserPass FROM `uabc`.`UserAccounts` " \
-                         "WHERE UserEmail = '{email}';".format(email=email)
-    c, con = connection()
-    c.execute(userinfosearch)
-    results = c.fetchall()
 
-    if len(results) == 1:
-
-        for r in results:
-            thisemail = r[0]
-            thisuser = r[1]
-            stored_pwd = r[2]
-
-        validpass = verify_password(stored_pwd, password)
-
-        if validpass:
-            session['logged_in'] = True
-            session['name'] = thisuser
-            session['email'] = thisemail
-            return True
-
-    else:
-        return False
 
