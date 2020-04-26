@@ -16,11 +16,11 @@
     <ul class="nav navbar-nav navbar-fixed-top">
     </ul>
     <ul class="nav navbar-nav navbar-right">
-      {% if session['logged_in'] %}<a href = {{ url_for('update_account.updateaccount') }} <span class= "glyphicon glyphicon-log-in">Account Settings</a>
-          <a href = {{ url_for('logout') }} <span class= "glyphicon glyphicon-log-in">Logout</a>
-          <a href = {{ url_for('dashboard') }} <span class= "glyphicon glyphicon-log-in">Dashboard</a>
-        {% else %}<a href = {{ url_for('home') }} <span class= "glyphicon glyphicon-log-in">Login</a>
-          <a href = {{ url_for('create') }} <span class="glyphicon glyphicon-log-in">Create Account</a>
+      {% if current_user.is_authenticated %}<a href = {{ url_for('update_account.updateaccount') }} <span class= "glyphicon glyphicon-log-in">Account Settings</a>
+          <a href = {{ url_for('logout.logout') }} <span class= "glyphicon glyphicon-log-in">Logout</a>
+          <a href = {{ url_for('profile_dashboard.dashboard') }} <span class= "glyphicon glyphicon-log-in">Dashboard</a>
+        {% else %}<a href = {{ url_for('login.login') }} <span class= "glyphicon glyphicon-log-in">Login</a>
+          <a href = {{ url_for('create_account.create') }} <span class="glyphicon glyphicon-log-in">Create Account</a>
         {% endif %}
     </ul>
   </div>
@@ -29,9 +29,9 @@
   <body>
 
     {% block user_image %}
- {% if session['logged_in'] %}
-            <h5>Hello {{ session['username'] }}</h5>
-        {% endif %}
+
+
+
     {% endblock user_image %}
     {% block content %}
 
@@ -49,7 +49,7 @@
       {% block footer %}
           <div id="footer">
       <p>&copy; Copyright 2010 by Phil Harmston</p>
-          <a href = {{ url_for('contact') }} >Contact Us</a></a>.
+
       {% endblock %}
     </div>
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
