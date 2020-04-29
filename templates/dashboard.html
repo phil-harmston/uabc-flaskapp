@@ -1,20 +1,28 @@
 {% extends 'layout.html' %}
-{% block user_image %}
 
-
-          <h5>Hello {{ session['username'] }}</h5>
-
-{% endblock user_image %}
-{% block content %}
+{% block your_store %}
 <div class='login-form'><form class = 'login-form' action="/dashboard" method="POST">
 
-                {{form.csc_val}}
-{#    {{ form.search_option }}#}
-    <input type="submit" value="Search By CSC Code" class="btn btn-primary">
+    <div>{{storesearch.search_option}}</div>
+</form>
+{% endblock your_store %}
+
+{% block user_image %}
+{% endblock user_image %}
+
+
+
+{% block content %}
+    <p>Welcome {{ current_user.FirstName }} {{ current_user.LastName }}</p>
+    <p>Your registered zip code is {{ current_user.ZipCode }}</p>
+<div class='login-form'><form class = 'login-form' action="/dashboard" method="POST">
+
+                <div>{{form.csc_val}}{{ form.search_option }}
+    <input type="submit" value="Search" class="btn btn-primary"></div>
 </form>
 
     {% endblock content %}
-
+    <div>
     {% block search_table %}
     <table class = 'table table-striped'>
     <colgroup>
@@ -53,7 +61,7 @@
     </tbody>
     </table>
     {% endblock search_table %}
-
+</div>
 
     {% block hotlist_table %}
         <h3>Hot List</h3>

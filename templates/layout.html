@@ -15,34 +15,31 @@
     </div>
     <ul class="nav navbar-nav navbar-fixed-top">
     </ul>
-    <ul class="nav navbar-nav navbar-right">
+    <li class="nav navbar-nav navbar-right">
       {% if current_user.is_authenticated %}<a href = {{ url_for('update_account.updateaccount') }} <span class= "glyphicon glyphicon-log-in">Account Settings</a>
           <a href = {{ url_for('logout.logout') }} <span class= "glyphicon glyphicon-log-in">Logout</a>
           <a href = {{ url_for('profile_dashboard.dashboard') }} <span class= "glyphicon glyphicon-log-in">Dashboard</a>
         {% else %}<a href = {{ url_for('login.login') }} <span class= "glyphicon glyphicon-log-in">Login</a>
           <a href = {{ url_for('create_account.create') }} <span class="glyphicon glyphicon-log-in">Create Account</a>
         {% endif %}
-    </ul>
+    </li>
   </div>
 </nav>
   </head>
   <body>
+    {% block your_store %}
+    {% endblock your_store %}
 
     {% block user_image %}
-
-
-
     {% endblock user_image %}
-    {% block content %}
 
+    {% block content %}
     {% endblock content%}
 
     {% block search_table %}
-
     {% endblock search_table %}
 
     {% block hotlist_table %}
-
     {% endblock hotlist_table %}
 
 

@@ -1,4 +1,7 @@
 from flask import Flask, render_template
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.common.keys import Keys
+from selenium import webdriver
 import os
 import shutil
 import hashlib
@@ -31,6 +34,7 @@ def check_sql_string(sql, values):
 def soup_it(html, sku, c):
     soup = bs(html, 'lxml')
     infodict = {}
+    c, con = connection()
 
     try:
         span = soup.find('span', id="ContentPlaceHolderBody_lblSku")
@@ -80,9 +84,10 @@ def soup_it(html, sku, c):
 
 
     price = str(infodict.get('Price'))
+
     status = str(infodict.get('Status'))
 
-    c, con = connection()
+
 
     update_data = """UPDATE Inventory SET CURRENT_PRICE= ?, STATUS=? WHERE CS_CODE=?;"""
     values = (price, status, sku)
@@ -117,23 +122,6 @@ def recordStoreRecords(r, sku):
     c.close()
 
 
-def hash_password(password):
-    """Hash a password for storing."""
-    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
-    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), salt, 100000)
-    pwdhash = binascii.hexlify(pwdhash)
-    return (salt + pwdhash).decode('ascii')
-
-def verify_password(stored_password, provided_password):
-    """Verify a stored password against one provided by user"""
-    salt = stored_password[:64]
-    stored_password = stored_password[64:]
-    pwdhash = hashlib.pbkdf2_hmac('sha512',
-                                  provided_password.encode('utf-8'),
-                                  salt.encode('ascii'),
-                                  100000)
-    pwdhash = binascii.hexlify(pwdhash).decode('ascii')
-    return pwdhash == stored_password
 
 
 def connection():
@@ -148,3 +136,31 @@ def connection():
 
 
 
+def web_driver(search_input):
+    c, con = connection()
+    # Start webdriver
+    # ----------------------------------------------------------------------
+    # id of the Item CSC Code
+    id = "ContentPlaceHolderBody_tbCscCode"
+
+    # name of the Item Name box
+    name = "ctl00$ContentPlaceHolderBody$tbCscCode"
+
+    options = FirefoxOptions()
+    options.add_argument("--headless")
+    driver = webdriver.Firefox(options=options)
+    driver.get("https://webapps2.abc.utah.gov/Production/OnlineInventoryQuery/IQ/InventoryQuery.aspx")
+    try:
+        itemNameSearchBox = driver.find_element_by_name("ctl00$ContentPlaceHolderBody$tbItemName")
+
+        itemIdSearchBox = driver.find_element_by_id(id)
+        itemIdSearchBox.send_keys(search_input)
+        itemIdSearchBox.send_keys(Keys.ENTER)
+        time.sleep(3)
+        html = driver.page_source
+        soup_it(html, search_input, c)
+    except:
+        pass
+    driver.close()
+    # End Web driver
+    # ----------------------------------------------------------------------
