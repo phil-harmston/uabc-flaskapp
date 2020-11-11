@@ -4,7 +4,35 @@
     {% block head %}
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
     <title>{% block title %}{% endblock %} - My Webpage</title>
+
+        <script src="https://js.api.here.com/v3/3.1/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+        <script src="https://js.api.here.com/v3/3.1/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
+
+
+        <script>
+
+
+            var platform = new H.service.Platform({
+        'apikey': '{ueadHu6364zDzACmfMAS-obgSaJKsffgGDvts_iaOZo}'
+        });
+        var defaultLayers = platform.createDefaultLayers();
+
+// Instantiate (and display) a map object:
+var map = new H.Map(
+    document.getElementById('mapContainer'),
+    defaultLayers.vector.normal.map,
+    {
+      zoom: 10,
+      center: { lat: 52.5, lng: 13.4 }
+    });
+
+        </script>
+
+
+
+
     {% endblock head %}
    <nav class="navbar navbar-inverse">
   <div class="container-fluid">

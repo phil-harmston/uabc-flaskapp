@@ -1,24 +1,22 @@
 {% extends 'layout.html' %}
 
 {% block your_store %}
-<div class='login-form'><form class = 'login-form' action="/dashboard" method="POST">
+<div class='login-form'><form class = 'login-form' action="/yourstore" method="POST">
 
-    <div>{{storesearch.search_option}}</div>
+    <div>{{storesearch.search_option}}
+<input type="submit" value="Select Store" class="btn btn-primary"></div>
 </form>
 {% endblock your_store %}
 
-{% block user_image %}
-{% endblock user_image %}
-
-
 
 {% block content %}
-    <p>Welcome {{ current_user.FirstName }} {{ current_user.LastName }}</p>
-    <p>Your registered zip code is {{ current_user.ZipCode }}</p>
+    Welcome {{ current_user.FirstName }} {{ current_user.LastName }}
+    Your registered zip code is {{ current_user.ZipCode }}
+    <div>Your current store is {{ current_user.UserStore }}</div>
 <div class='login-form'><form class = 'login-form' action="/dashboard" method="POST">
 
-                <div>{{form.csc_val}}{{ form.search_option }}
-    <input type="submit" value="Search" class="btn btn-primary"></div>
+    <div>{{form.csc_val}}{{ form.search_option }}
+        <input type="submit" value="Search" class="btn btn-primary"></div>
 </form>
 
     {% endblock content %}

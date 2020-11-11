@@ -44,6 +44,7 @@ from profile_dash import profile_dashboard
 from hotlist import my_hotlist
 from logout import user_logout
 from delete import delete_record
+from yourstore import your_store
 
 
 # import custom utilities from our util files
@@ -59,6 +60,7 @@ app.register_blueprint(profile_dashboard, url_prefix="/")
 app.register_blueprint(my_hotlist, url_prefix="/")
 app.register_blueprint(user_logout, url_prefix="/")
 app.register_blueprint(delete_record, url_prefix="/")
+app.register_blueprint(your_store, url_prefix="/")
 
 
 

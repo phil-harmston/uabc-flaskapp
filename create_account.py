@@ -26,13 +26,13 @@ def create():
         passwd1 = form.pass1.data
         passwd2 = form.pass2.data
 
-
+        print(email, firstname, lastname, address, city, state, zipcode, phone, passwd1, passwd2)
 
         if passwd1 == passwd2:
             hashed_pass = bcrypt.generate_password_hash(form.pass1.data).decode('utf-8')
             userID = random.randint(1, 1000000000)
             user = User(UserEmail=email, FirstName=firstname, LastName=lastname,
-                        Address=address, City=city, State=state, ZipCode=zipcode, Phone=phone, UserPass=hashed_pass, UserID = userID)
+                        Address=address, City=city, State=state, ZipCode=zipcode, Phone=phone, UserPass=hashed_pass, id = userID)
             db.session.add(user)
             db.session.commit()
 

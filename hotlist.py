@@ -16,6 +16,7 @@ def hotlist():
     if current_user.is_authenticated:
         user = current_user
     if request.method == "POST":
+
         cs_code = request.form['add_hotlist']
         randNumber = random.randint(0, 100000)
 
@@ -33,3 +34,4 @@ def hotlist():
         con.commit()
 
         return redirect(url_for('profile_dashboard.dashboard'))
+

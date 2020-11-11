@@ -12,7 +12,7 @@ class accountForm(FlaskForm):
     lastname = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=20)])
     address = StringField('Address', validators=[DataRequired(), Length(min=2, max=40)])
     city = StringField('City', validators=[DataRequired(), Length(min=2, max=30)])
-    state = StringField('State', validators=[DataRequired(), Length(min=2, max=20)])
+    state = StringField('State', validators=[DataRequired(), Length(min=2, max=2)])
     zipcode = StringField('Zip Code', validators=[DataRequired(), Length(max=5)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     phone = StringField('Phone', validators=[DataRequired(), Length(max=10)])

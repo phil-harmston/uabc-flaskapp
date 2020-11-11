@@ -1,5 +1,6 @@
 from abcapp import app, db, login_manager
 from flask_sqlalchemy import SQLAlchemy
+
 from flask_login import UserMixin
 from flask import Flask, flash, redirect, render_template, request, session, Blueprint, url_for
 from flask_login import login_user, current_user, login_required, logout_user
@@ -25,9 +26,10 @@ class User(db.Model, UserMixin):
     State = db.Column(db.String(45))
     ZipCode = db.Column(db.String(45))
     Phone = db.Column(db.String(45))
-    UserPass = db.Column(db.String(45))
+    UserPass = db.Column(db.String(256))
     UserName = db.Column(db.String(45))
     UserAge = db.Column(db.Integer)
+    UserStore = db.Column(db.String(45))
     id = db.Column(db.Integer, primary_key = True)
 
     def __init(self, email, password):

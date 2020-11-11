@@ -2,7 +2,7 @@ from flask import render_template, request, Blueprint
 from flask_login import login_user, current_user, login_required
 from User import User
 from searchform import searchCSCCode
-from yourstore import yourStore
+from yourstore import selectStore
 
 from uabc_util import connection, soup_it, web_driver
 import time
@@ -16,7 +16,7 @@ def dashboard():
     if current_user.is_authenticated:
         user = current_user
 
-    storesearch = yourStore()
+    storesearch = selectStore()
     form = searchCSCCode()
 
     # connections
@@ -32,8 +32,11 @@ def dashboard():
 
     hotlist = [{columns[index][0]: column for index, column in enumerate(value)} for value in c.fetchall()]
 
-    if request.method == "GET":
-        return render_template('dashboard.html', hotlist=hotlist, form=form, storesearch=storesearch)
+    if request.method == "POST":
+
+        # inventory_search = "select * FROM uabc.Inventory where Inventory.'{}' = ;"
+        # c.execute(hotlist_search)
+        return render_template('dashboard.html', results=results, hotlist=hotlist, form=form, storesearch=storesearch)
 
     if request.method == "POST":
         search_input = form.csc_val.data
